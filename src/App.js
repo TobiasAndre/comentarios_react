@@ -4,8 +4,6 @@ import 'bootstrap-css-only'
 import NewComment from './NewComment'
 import Comments from './Comments'
 
-import Firebase from 'firebase'
-
 class App extends Component {
   constructor(props){
     super(props)
@@ -21,6 +19,16 @@ class App extends Component {
     this.refComments = this.props.base.syncState('comments',{
       context: this,
       state: 'comments'
+    })
+
+    this.props.auth.onAuthStateChanged((user)=>{
+      if(user){
+        this.setState({ isLoggedIn: true, user })
+        console.log('logado com facebook')
+      }else{
+        this.setState({ isLoggedIn: false, user: {} })
+        console.log('necessário logar com facebook!')
+      }
     })
 
   }
@@ -40,7 +48,14 @@ class App extends Component {
   render() {
     return (
       <div className="container">
-        { this.state.isLoggedIn && <NewComment postNewComment={this.postNewComment}/> }
+        { this.state.isLoggedIn && 
+          <div>
+            {this.state.displayName}
+            <img alt={this.state.displayName} src={this.state.user.photoURL}/><br />
+            <button onClick={()=> this.props.auth.signOut()}>Deslogar</button>
+            <NewComment postNewComment={this.postNewComment}/> 
+          </div>
+        }
         { !this.state.isLoggedIn &&
           <div className='alert alert-info'>
              <button onClick={()=> this.auth('facebook')}>Entre com o Facebook para comentar</button>
